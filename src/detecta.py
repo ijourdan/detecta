@@ -1,6 +1,6 @@
 from numpy import arange, array, abs
 import time
-from cv2 import waitKey, resize, VideoCapture, imwrite, destroyAllWindows
+from cv2 import waitKey, resize, VideoCapture, imwrite, destroyAllWindows, imshow
 from cv2.dnn import readNetFromCaffe, blobFromImage
 from imutils import resize as imuresize
 from pandas import Timestamp
@@ -35,6 +35,8 @@ class Target:
 
         # iniciamos el modelo
         self.net = readNetFromCaffe(self.prototxt, self.modelo)
+
+        self.flag = False
 
     def video_radar(self):
         ret, self.old_frame = self.cap.read()  # leemos un frame
@@ -90,6 +92,9 @@ class Target:
                         image_name = str(ts) + '_' + str(i)
                         imwrite(self.dir_out + image_name + '.jpg', img_cut)
 
+                        if self.flag:
+                            imshow('sved', img_cut)
+
                 # cambio manual de nivel de confianza
                 if (key == ord("r")) and (self.confthr < 0.99):  # aumenta sensibilidad
                     self.confthr += .1
@@ -104,11 +109,17 @@ class Target:
                 if (key == ord("d")) and (self.dimthr > 0.2):  # baja sensibilidad
                     self.dimthr -= .1
                     print('dimthr: ', self.dimthr)
+                if key == ord("s"):  # mustra imagen
+                    if self.flag:
+                        self.flag = False
+                    else:
+                        self.flag = True
 
             # si seleccionamos 'q' se termina.
             if key == ord("q"):  # termina
                 self.close_vid()
                 break
+
 
     def start(self, nomb):
         """
